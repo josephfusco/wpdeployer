@@ -1,0 +1,48 @@
+/* Buttons */
+.wpdeployer-wrap .button-delete {
+	background-color: #d9534f;
+	border-color: #d43f3a;
+	color: #fff;
+	-webkit-box-shadow: inset 0 1px 0 rgba(255,99,71,.5),0 1px 0 rgba(0,0,0,.15);
+	box-shadow: inset 0 1px 0 rgba(255,99,71,.5),0 1px 0 rgba(0,0,0,.15);
+}
+.wpdeployer-wrap .button-delete:active,
+.wpdeployer-wrap .button-delete:focus,
+.wpdeployer-wrap .button-delete:hover {
+	background-color: #c9302c;
+	border-color: #761c19;
+	color: #fff;
+}
+.wpdeployer-wrap .theme-browser .theme {
+	width: 400px;
+}
+.wpdeployer-wrap .theme-screenshot .content {
+	padding: 15px;
+	position: absolute;
+	min-height: 100%;
+	min-width: 100%;
+}
+.wpdeployer-wrap .theme-screenshot .content {
+	background-color: #fff;
+}
+.wpdeployer-wrap .button-update-package {
+	position: absolute;
+	bottom: 15px;
+	right: 15px;
+}
+.wpdeployer-wrap .button-save-package {
+	position: absolute;
+	bottom: 15px;
+}
+.wpdeployer-wrap .theme-browser .theme .repo-name {
+	border-bottom: solid 1px #dedede;
+}
+.wpdeployer-wrap .theme.wpdeployer-package, .theme.wpdeployer-package:hover {
+	cursor: default;
+}
+.wpdeployer-wrap .push-to-deploy {
+	width: 100%;
+}
+.wpdeployer-wrap .theme-screenshot .content {
+	box-sizing: border-box;
+}
