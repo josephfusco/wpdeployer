@@ -5,3 +5,4 @@ Modified from the free version of [WP Pusher](https://wppusher.com) which is lic
 ## Additional Features
 
 + Support for private repositories
++ Unlimted sites
