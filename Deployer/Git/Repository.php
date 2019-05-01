@@ -4,60 +4,64 @@ namespace Deployer\Git;
 
 use Exception;
 
-class Repository {
+class Repository
+{
+    protected $handle;
+    protected $branch;
+    protected $private = 0;
 
-	protected $handle;
-	protected $branch;
-	protected $private = 0;
+    public function __construct($handle)
+    {
+        if ( ! $this->validate($handle))
+            throw new Exception("Repository is not valid.");
+            
+        $this->handle = $handle;
+    }
 
-	public function __construct( $handle ) {
-		if ( ! $this->validate( $handle ) ) {
-			throw new Exception( 'Repository is not valid.' );
-		}
+    public function validate($repo)
+    {
+        // For now, don't validate repositories
+        // preg_match('/^[a-zA-Z0-9_-\d\.]+[\/]+[a-zA-Z0-9_-\d\.]*+$/', $repo, $match);
 
-		$this->handle = $handle;
-	}
+        // if (count($match) === 0) return false;
 
-	public function validate( $repo ) {
-		// For now, don't validate repositories
-		// preg_match('/^[a-zA-Z0-9_-\d\.]+[\/]+[a-zA-Z0-9_-\d\.]*+$/', $repo, $match);
+        return true;
+    }
 
-		// if (count($match) === 0) return false;
+    public function getBranch()
+    {
+        if ( ! $this->branch || $this->branch === '') return 'master';
 
-		return true;
-	}
+        return $this->branch;
+    }
 
-	public function getBranch() {
-		if ( ! $this->branch || $this->branch === '' ) {
-			return 'master';
-		}
+    public function setBranch($branch)
+    {
+        $this->branch = $branch;
+    }
 
-		return $this->branch;
-	}
+    public function getSlug()
+    {
+        $elements = preg_split('/\//', $this->handle);
 
-	public function setBranch( $branch ) {
-		$this->branch = $branch;
-	}
+        if ( ! isset($elements[1]))
+            throw new Exception('Repository could not be parsed.');
 
-	public function getSlug() {
-		$elements = preg_split( '/\//', $this->handle );
+        return $elements[1];
+    }
 
-		if ( ! isset( $elements[1] ) ) {
-			throw new Exception( 'Repository could not be parsed.' );
-		}
+    public function makePrivate()
+    {
+        $this->private = 1;
+    }
 
-		return $elements[1];
-	}
+    public function isPrivate()
+    {
+        return $this->private;
+    }
 
-	public function makePrivate() {
-		$this->private = 1;
-	}
-
-	public function isPrivate() {
-		return $this->private;
-	}
-
-	public function __toString() {
-		return $this->handle;
-	}
+    public function __toString()
+    {
+        return $this->handle;
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace Deployer;
 
-interface ProviderInterface {
-
-	public function register( Deployer $deployer );
+interface ProviderInterface
+{
+    public function register(Deployer $deployer);
 }

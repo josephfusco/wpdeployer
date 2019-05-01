@@ -2,13 +2,14 @@
 
 namespace Deployer\Commands;
 
-class UpdateTheme {
+class UpdateTheme
+{
+    public $stylesheet;
+    public $repository;
 
-	public $stylesheet;
-	public $repository;
-
-	public function __construct( $input ) {
-		$this->stylesheet = $input['stylesheet'];
-		$this->repository = $input['repository'];
-	}
+    public function __construct($input)
+    {
+        $this->stylesheet = $input['stylesheet'];
+        $this->repository = $input['repository'];
+    }
 }

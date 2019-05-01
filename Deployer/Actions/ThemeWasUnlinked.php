@@ -2,6 +2,6 @@
 
 namespace Deployer\Actions;
 
-class ThemeWasUnlinked {
-
+class ThemeWasUnlinked
+{
 }

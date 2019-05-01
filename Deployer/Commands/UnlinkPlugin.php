@@ -2,11 +2,12 @@
 
 namespace Deployer\Commands;
 
-class UnlinkPlugin {
+class UnlinkPlugin
+{
+    public $file;
 
-	public $file;
-
-	public function __construct( $input ) {
-		$this->file = $input['file'];
-	}
+    public function __construct($input)
+    {
+        $this->file = $input['file'];
+    }
 }

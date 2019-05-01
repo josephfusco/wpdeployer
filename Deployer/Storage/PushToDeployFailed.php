@@ -4,6 +4,6 @@ namespace Deployer\Storage;
 
 use Exception;
 
-class PushToDeployFailed extends Exception {
-
+class PushToDeployFailed extends Exception
+{
 }

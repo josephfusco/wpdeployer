@@ -6,23 +6,25 @@ use Deployer\Actions\ThemeWasUnlinked;
 use Deployer\Commands\UnlinkTheme as UnlinkThemeCommand;
 use Deployer\Storage\ThemeRepository;
 
-class UnlinkTheme {
+class UnlinkTheme
+{
+    /**
+     * @var ThemeRepository
+     */
+    private $themes;
 
-	/**
-	 * @var ThemeRepository
-	 */
-	private $themes;
+    /**
+     * @param ThemeRepository $themes
+     */
+    public function __construct(ThemeRepository $themes)
+    {
+        $this->themes = $themes;
+    }
 
-	/**
-	 * @param ThemeRepository $themes
-	 */
-	public function __construct( ThemeRepository $themes ) {
-		$this->themes = $themes;
-	}
+    public function handle(UnlinkThemeCommand $command)
+    {
+        $this->themes->unlink($command->stylesheet);
 
-	public function handle( UnlinkThemeCommand $command ) {
-		$this->themes->unlink( $command->stylesheet );
-
-		do_action( 'wpdeployer_theme_was_unlinked', new ThemeWasUnlinked() );
-	}
+        do_action('wpdeployer_theme_was_unlinked', new ThemeWasUnlinked);
+    }
 }

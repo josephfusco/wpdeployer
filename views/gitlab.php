@@ -9,7 +9,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 <?php settings_errors(); ?>
 
-<form method="post" action="<?php echo esc_url( admin_url() ); ?>options.php">
+<form method="post" action="<?php echo admin_url(); ?>options.php">
 	<?php settings_fields( 'deployer-gl-settings' ); ?>
 	<?php do_settings_sections( 'deployer-gl-settings' ); ?>
 	<table class="form-table">

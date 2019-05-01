@@ -5,21 +5,23 @@ namespace Deployer\ActionHandlers;
 use Deployer\Actions\ThemeWasEdited;
 use Deployer\Dashboard;
 
-class ShowMessageWhenThemeWasEdited {
+class ShowMessageWhenThemeWasEdited
+{
+    /**
+     * @var Dashboard
+     */
+    private $dashboard;
 
-	/**
-	 * @var Dashboard
-	 */
-	private $dashboard;
+    /**
+     * @param Dashboard $dashboard
+     */
+    public function __construct(Dashboard $dashboard)
+    {
+        $this->dashboard = $dashboard;
+    }
 
-	/**
-	 * @param Dashboard $dashboard
-	 */
-	public function __construct( Dashboard $dashboard ) {
-		$this->dashboard = $dashboard;
-	}
-
-	public function handle( ThemeWasEdited $action ) {
-		$this->dashboard->addMessage( 'Theme changes was successfully saved.' );
-	}
+    public function handle(ThemeWasEdited $action)
+    {
+        $this->dashboard->addMessage('Theme changes was successfully saved.');
+    }
 }

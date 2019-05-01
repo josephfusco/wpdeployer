@@ -11,7 +11,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 <br>
 
-<form method="post" action="<?php echo esc_url( admin_url() ); ?>options.php">
+<form method="post" action="<?php echo admin_url(); ?>options.php">
 	<?php settings_fields( 'deployer-license-settings' ); ?>
 	<?php do_settings_sections( 'deployer-license-settings' ); ?>
 

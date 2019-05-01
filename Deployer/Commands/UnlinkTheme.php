@@ -2,11 +2,12 @@
 
 namespace Deployer\Commands;
 
-class UnlinkTheme {
+class UnlinkTheme
+{
+    public $stylesheet;
 
-	public $stylesheet;
-
-	public function __construct( $input ) {
-		$this->stylesheet = $input['stylesheet'];
-	}
+    public function __construct($input)
+    {
+        $this->stylesheet = $input['stylesheet'];
+    }
 }

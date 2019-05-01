@@ -4,17 +4,18 @@ namespace Deployer\Actions;
 
 use Deployer\Plugin;
 
-class PluginWasInstalled {
+class PluginWasInstalled
+{
+    /**
+     * @var Plugin
+     */
+    public $plugin;
 
-	/**
-	 * @var Plugin
-	 */
-	public $plugin;
-
-	/**
-	 * @param Plugin $plugin
-	 */
-	public function __construct( Plugin $plugin ) {
-		$this->plugin = $plugin;
-	}
+    /**
+     * @param Plugin $plugin
+     */
+    public function __construct(Plugin $plugin)
+    {
+        $this->plugin = $plugin;
+    }
 }

@@ -2,11 +2,12 @@
 
 namespace Deployer\Commands;
 
-class UpdatePackageFromWebhook {
+class UpdatePackageFromWebhook
+{
+    public $repository;
 
-	public $repository;
-
-	public function __construct( $repository ) {
-		$this->repository = $repository;
-	}
+    public function __construct($repository)
+    {
+        $this->repository = $repository;
+    }
 }

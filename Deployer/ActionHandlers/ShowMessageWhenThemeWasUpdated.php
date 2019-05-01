@@ -5,24 +5,26 @@ namespace Deployer\ActionHandlers;
 use Deployer\Actions\ThemeWasUpdated;
 use Deployer\Dashboard;
 
-class ShowMessageWhenThemeWasUpdated {
+class ShowMessageWhenThemeWasUpdated
+{
+    /**
+     * @var Dashboard
+     */
+    private $dashboard;
 
-	/**
-	 * @var Dashboard
-	 */
-	private $dashboard;
+    /**
+     * @param Dashboard $dashboard
+     */
+    public function __construct(Dashboard $dashboard)
+    {
+        $this->dashboard = $dashboard;
+    }
 
-	/**
-	 * @param Dashboard $dashboard
-	 */
-	public function __construct( Dashboard $dashboard ) {
-		$this->dashboard = $dashboard;
-	}
-
-	/**
-	 * @param ThemeWasUpdated $action
-	 */
-	public function handle( ThemeWasUpdated $action ) {
-		$this->dashboard->addMessage( 'Theme was successfully updated.' );
-	}
+    /**
+     * @param ThemeWasUpdated $action
+     */
+    public function handle(ThemeWasUpdated $action)
+    {
+        $this->dashboard->addMessage('Theme was successfully updated.');
+    }
 }
