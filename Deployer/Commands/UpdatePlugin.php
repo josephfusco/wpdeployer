@@ -2,14 +2,13 @@
 
 namespace Deployer\Commands;
 
-class UpdatePlugin
-{
-    public $file;
-    public $repository;
+class UpdatePlugin {
 
-    public function __construct($input)
-    {
-        $this->file = $input['file'];
-        $this->repository = $input['repository'];
-    }
+	public $file;
+	public $repository;
+
+	public function __construct( $input ) {
+		$this->file       = $input['file'];
+		$this->repository = $input['repository'];
+	}
 }

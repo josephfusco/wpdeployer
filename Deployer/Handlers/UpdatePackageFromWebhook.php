@@ -13,77 +13,79 @@ use Deployer\Storage\PushToDeployFailed;
 use Deployer\Storage\ThemeNotFound;
 use Deployer\Storage\ThemeRepository;
 
-class UpdatePackageFromWebhook
-{
-    /**
-     * @var Dashboard
-     */
-    private $dashboard;
+class UpdatePackageFromWebhook {
 
-    /**
-     * @var Logger
-     */
-    private $log;
+	/**
+	 * @var Dashboard
+	 */
+	private $dashboard;
 
-    /**
-     * @var PluginRepository
-     */
-    private $plugins;
+	/**
+	 * @var Logger
+	 */
+	private $log;
 
-    /**
-     * @var ThemeRepository
-     */
-    private $themes;
+	/**
+	 * @var PluginRepository
+	 */
+	private $plugins;
 
-    /**
-     * @param Dashboard $dashboard
-     * @param Logger $log
-     * @param PluginRepository $plugins
-     * @param ThemeRepository $themes
-     */
-    public function __construct(Dashboard $dashboard, Logger $log, PluginRepository $plugins, ThemeRepository $themes)
-    {
-        $this->dashboard = $dashboard;
-        $this->log = $log;
-        $this->plugins = $plugins;
-        $this->themes = $themes;
-    }
+	/**
+	 * @var ThemeRepository
+	 */
+	private $themes;
 
-    public function handle(UpdatePackageFromWebhookCommand $command)
-    {
-        $package = false;
+	/**
+	 * @param Dashboard        $dashboard
+	 * @param Logger           $log
+	 * @param PluginRepository $plugins
+	 * @param ThemeRepository  $themes
+	 */
+	public function __construct( Dashboard $dashboard, Logger $log, PluginRepository $plugins, ThemeRepository $themes ) {
+		$this->dashboard = $dashboard;
+		$this->log       = $log;
+		$this->plugins   = $plugins;
+		$this->themes    = $themes;
+	}
 
-        // Plugin?
-        try {
-            $package = $this->plugins->deployerPluginFromRepository($command->repository);
-            $updateCommand = new UpdatePlugin(array(
-                'file' => $package->file,
-                'repository' => $package->repository,
-            ));
-        } catch (PluginNotFound $e) {
-            // No plugins...
-        }
+	public function handle( UpdatePackageFromWebhookCommand $command ) {
+		$package = false;
 
-        // Or theme?
-        try {
-            $package = $this->themes->deployerThemeFromRepository($command->repository);
-            $updateCommand = new UpdateTheme(array(
-                'stylesheet' => $package->stylesheet,
-                'repository' => $package->repository,
-            ));
-        } catch (ThemeNotFound $e) {
-            // ... and no themes.
-        }
+		// Plugin?
+		try {
+			$package       = $this->plugins->deployerPluginFromRepository( $command->repository );
+			$updateCommand = new UpdatePlugin(
+				[
+					'file'       => $package->file,
+					'repository' => $package->repository,
+				]
+			);
+		} catch ( PluginNotFound $e ) {
+			// No plugins...
+		}
 
-        if ( ! $package) {
-            throw new PushToDeployFailed("Push-to-Deploy failed. Couldn't find matching package.");
-        }
+		// Or theme?
+		try {
+			$package       = $this->themes->deployerThemeFromRepository( $command->repository );
+			$updateCommand = new UpdateTheme(
+				[
+					'stylesheet' => $package->stylesheet,
+					'repository' => $package->repository,
+				]
+			);
+		} catch ( ThemeNotFound $e ) {
+			// ... and no themes.
+		}
 
-        // Check if push to deploy is enabled before executing
-        if ( ! $package->pushToDeploy) {
-            throw new PushToDeployFailed("Push-to-Deploy failed. Push-to-Deploy was not enabled for package '{$package->name}'");
-        }
+		if ( ! $package ) {
+			throw new PushToDeployFailed( "Push-to-Deploy failed. Couldn't find matching package." );
+		}
 
-        $this->dashboard->execute($updateCommand);
-    }
+		// Check if push to deploy is enabled before executing
+		if ( ! $package->pushToDeploy ) {
+			throw new PushToDeployFailed( "Push-to-Deploy failed. Push-to-Deploy was not enabled for package '{$package->name}'" );
+		}
+
+		$this->dashboard->execute( $updateCommand );
+	}
 }

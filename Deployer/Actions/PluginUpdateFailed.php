@@ -2,11 +2,11 @@
 
 namespace Deployer\Actions;
 
-class PluginUpdateFailed
-{
-    public $message;
+class PluginUpdateFailed {
 
-    public function __construct($message) {
-        $this->message = $message;
-    }
+	public $message;
+
+	public function __construct( $message ) {
+		$this->message = $message;
+	}
 }

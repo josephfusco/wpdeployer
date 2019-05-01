@@ -4,6 +4,6 @@ namespace Deployer\Storage;
 
 use Exception;
 
-class ThemeNotFound extends Exception
-{
+class ThemeNotFound extends Exception {
+
 }

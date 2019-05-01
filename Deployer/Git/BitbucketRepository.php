@@ -4,68 +4,68 @@ namespace Deployer\Git;
 
 use Exception;
 
-class BitbucketRepository extends Repository
-{
-    public $code = 'bb';
+class BitbucketRepository extends Repository {
 
-    public function getZipUrl()
-    {
-        $url = 'https://bitbucket.org/' . $this->handle . '/get/' . $this->getBranch() . '.zip?dir=/wpdeployer';
+	public $code = 'bb';
 
-        if ( ! $this->isPrivate()) {
-            return $url;
-        }
+	public function getZipUrl() {
+		$url = 'https://bitbucket.org/' . $this->handle . '/get/' . $this->getBranch() . '.zip?dir=/wpdeployer';
 
-        $token = get_option('bb_token');
+		if ( ! $this->isPrivate() ) {
+			return $url;
+		}
 
-        // If token is present, use that to get the actual token ...
-        if (is_string($token) and $token !== '') {
-            $accessToken = $this->getAccessTokenFromRefreshToken($token);
+		$token = get_option( 'bb_token' );
 
-            return $url . '&access_token=' . $accessToken;
-        }
+		// If token is present, use that to get the actual token ...
+		if ( is_string( $token ) and $token !== '' ) {
+			$accessToken = $this->getAccessTokenFromRefreshToken( $token );
 
-        // ... Otherwise, use basic auth.
-        add_filter('http_request_args', array($this, 'bitbucketBasicAuth'), 10, 2 );
+			return $url . '&access_token=' . $accessToken;
+		}
 
-        return $url;
-    }
+		// ... Otherwise, use basic auth.
+		add_filter( 'http_request_args', [ $this, 'bitbucketBasicAuth' ], 10, 2 );
 
-    public function bitbucketBasicAuth($args, $url)
-    {
-        if ( ! strstr($url, 'https://bitbucket.org/'))
-            return $args;
+		return $url;
+	}
 
-        $user = get_option('bb_user');
-        $pass = get_option('bb_pass');
+	public function bitbucketBasicAuth( $args, $url ) {
+		if ( ! strstr( $url, 'https://bitbucket.org/' ) ) {
+			return $args;
+		}
 
-        if (is_string($user) && $user === '')
-            throw new Exception('No Bitbucket username stored.');
+		$user = get_option( 'bb_user' );
+		$pass = get_option( 'bb_pass' );
 
-        if (is_string($pass) && $pass === '')
-            throw new Exception('No Bitbucket password stored.');
+		if ( is_string( $user ) && $user === '' ) {
+			throw new Exception( 'No Bitbucket username stored.' );
+		}
 
-        $args['headers']['Authorization'] = 'Basic ' . base64_encode("{$user}:{$pass}");
+		if ( is_string( $pass ) && $pass === '' ) {
+			throw new Exception( 'No Bitbucket password stored.' );
+		}
 
-        return $args;
-    }
+		$args['headers']['Authorization'] = 'Basic ' . base64_encode( "{$user}:{$pass}" );
 
-    public function getAccessTokenFromRefreshToken($token)
-    {
-        $response = wp_remote_get("https://cloud.wppusher.com/auth/bitbucket/refresh-token?refresh_token={$token}");
+		return $args;
+	}
 
-        if (is_wp_error($response) or empty($response)) {
-            // Something went wrong
-            return '';
-        }
+	public function getAccessTokenFromRefreshToken( $token ) {
+		$response = wp_remote_get( "https://cloud.wppusher.com/auth/bitbucket/refresh-token?refresh_token={$token}" );
 
-        $json = json_decode($response['body'], true);
+		if ( is_wp_error( $response ) or empty( $response ) ) {
+			// Something went wrong
+			return '';
+		}
 
-        if ( ! isset($json['access_token'])) {
-            // Something went wrong
-            return '';
-        }
+		$json = json_decode( $response['body'], true );
 
-        return $json['access_token'];
-    }
+		if ( ! isset( $json['access_token'] ) ) {
+			// Something went wrong
+			return '';
+		}
+
+		return $json['access_token'];
+	}
 }

@@ -2,11 +2,11 @@
 
 namespace Deployer\Actions;
 
-class ThemeUpdateFailed
-{
-    public $message;
+class ThemeUpdateFailed {
 
-    public function __construct($message) {
-        $this->message = $message;
-    }
+	public $message;
+
+	public function __construct( $message ) {
+		$this->message = $message;
+	}
 }

@@ -1,14 +1,14 @@
 <?php
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 require 'wpdeployer.php';
 
 $deployer->make( 'Deployer\Storage\Database' )->uninstall();
 
-// Deactivate license
+// Deactivate license.
 $client = $deployer->make( 'Deployer\License\LicenseApi' );
 
 $key = get_option( 'wpdeployer_license_key', false );
@@ -17,7 +17,7 @@ if ( $key ) {
 	$client->removeLicenseFomSite( $key );
 }
 
-// Clean up
+// Clean up.
 delete_option( 'hide-wpdeployer-welcome' );
 delete_option( 'wpdeployer_token' );
 delete_option( 'wpdeployer_license_key' );

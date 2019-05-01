@@ -2,95 +2,92 @@
 
 namespace Deployer\License;
 
-class EddLicenseApi implements LicenseApi
-{
-    private $baseUrl = 'https://checkout.wppusher.com/';
+class EddLicenseApi implements LicenseApi {
 
-    public function getLicenseKey($key)
-    {
-        if ( ! $key or $key === '') {
-            return false;
-        }
+	private $baseUrl = 'https://checkout.wppusher.com/';
 
-        $result = wp_remote_get($this->baseUrl . '?edd_action=check_license&item_name=WP+Deployer&license=' . $key . '&url=' . home_url());
+	public function getLicenseKey( $key ) {
+		if ( ! $key or $key === '' ) {
+			return false;
+		}
 
-        $code = wp_remote_retrieve_response_code($result);
+		$result = wp_remote_get( $this->baseUrl . '?edd_action=check_license&item_name=WP+Deployer&license=' . $key . '&url=' . home_url() );
 
-        if ($code !== 200) {
-            return false;
-        }
+		$code = wp_remote_retrieve_response_code( $result );
 
-        $body = wp_remote_retrieve_body($result);
+		if ( $code !== 200 ) {
+			return false;
+		}
 
-        $array = json_decode($body, true);
+		$body = wp_remote_retrieve_body( $result );
 
-        if ( ! $array) {
-            return false;
-        }
+		$array = json_decode( $body, true );
 
-        if ($array['license'] === 'invalid') {
-            return false;
-        }
+		if ( ! $array ) {
+			return false;
+		}
 
-        if ($array['license'] !== 'active' and $array['license'] !== 'expired') {
-            $key = $this->registerKeyForSite($key);
+		if ( $array['license'] === 'invalid' ) {
+			return false;
+		}
 
-            if ( ! $key) {
-                return false;
-            }
-        }
+		if ( $array['license'] !== 'active' and $array['license'] !== 'expired' ) {
+			$key = $this->registerKeyForSite( $key );
 
-        // For backwards compatability:
-        $array['token'] = $key;
+			if ( ! $key ) {
+				return false;
+			}
+		}
 
-        return LicenseKey::fromEddResponseArray($array);
-    }
+		// For backwards compatability:
+		$array['token'] = $key;
 
-    public function registerKeyForSite($key)
-    {
-        // Try to register new license
-        $args = array(
-            'edd_action' => 'activate_license',
-            'item_name' => 'WP+Deployer',
-            'license' => $key,
-            'url' => home_url(),
-        );
-        $result = wp_remote_get(add_query_arg($args, $this->baseUrl));
+		return LicenseKey::fromEddResponseArray( $array );
+	}
 
-        // Error handling
-        $body = wp_remote_retrieve_body($result);
-        $array = json_decode($body, true);
+	public function registerKeyForSite( $key ) {
+		// Try to register new license
+		$args   = [
+			'edd_action' => 'activate_license',
+			'item_name'  => 'WP+Deployer',
+			'license'    => $key,
+			'url'        => home_url(),
+		];
+		$result = wp_remote_get( add_query_arg( $args, $this->baseUrl ) );
 
-        if ( ! $array) {
-            return false;
-        }
+		// Error handling
+		$body  = wp_remote_retrieve_body( $result );
+		$array = json_decode( $body, true );
 
-        if (isset($array['error']) and $array['error'] === 'no_activations_left') {
-            return false;
-        }
+		if ( ! $array ) {
+			return false;
+		}
 
-        if ($array['license'] !== 'valid') {
-            return false;
-        }
+		if ( isset( $array['error'] ) and $array['error'] === 'no_activations_left' ) {
+			return false;
+		}
 
-        return $key;
-    }
+		if ( $array['license'] !== 'valid' ) {
+			return false;
+		}
 
-    public function removeLicenseFomSite($key)
-    {
-        $args = array(
-            'edd_action' => 'deactivate_license',
-            'item_name' => 'WP+Deployer',
-            'license' => $key,
-        );
+		return $key;
+	}
 
-        $result = wp_remote_get(add_query_arg($args, $this->baseUrl));
-        $status = wp_remote_retrieve_response_code($result);
+	public function removeLicenseFomSite( $key ) {
+		$args = [
+			'edd_action' => 'deactivate_license',
+			'item_name'  => 'WP+Deployer',
+			'license'    => $key,
+		];
 
-        if ($status == 200) {
-            return false;
-        }
+		$result = wp_remote_get( add_query_arg( $args, $this->baseUrl ) );
+		$status = wp_remote_retrieve_response_code( $result );
 
-        return $key;
-    }
+		if ( $status == 200 ) {
+			return false;
+		}
+
+		return $key;
+	}
 }

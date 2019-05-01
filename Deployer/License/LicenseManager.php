@@ -2,50 +2,47 @@
 
 namespace Deployer\License;
 
-class LicenseManager
-{
-    /**
-     * @var LicenseApi
-     */
-    private $client;
+class LicenseManager {
 
-    /**
-     * @param LicenseApi $client
-     */
-    public function __construct(LicenseApi $client)
-    {
-        $this->client = $client;
-    }
+	/**
+	 * @var LicenseApi
+	 */
+	private $client;
 
-    public function licenseKey()
-    {
-        $key = get_option('wpdeployer_license_key', false);
+	/**
+	 * @param LicenseApi $client
+	 */
+	public function __construct( LicenseApi $client ) {
+		$this->client = $client;
+	}
 
-        if ( ! $key) {
-            return false;
-        }
+	public function licenseKey() {
+		$key = get_option( 'wpdeployer_license_key', false );
 
-        $key = $this->client->getLicenseKey($key);
+		if ( ! $key ) {
+			return false;
+		}
 
-        return $key;
-    }
+		$key = $this->client->getLicenseKey( $key );
 
-    public function activateSiteLicense($key, $oldKey)
-    {
-        // Field is deactivated, this means we
-        // want to revoke it, since it can't be activated twice.
-        $deactivate = is_null($key);
+		return $key;
+	}
 
-        if ($deactivate) {
-            return $this->client->removeLicenseFomSite($oldKey);
-        }
+	public function activateSiteLicense( $key, $oldKey ) {
+		// Field is deactivated, this means we
+		// want to revoke it, since it can't be activated twice.
+		$deactivate = is_null( $key );
 
-        $isValid = $this->client->registerKeyForSite($key);
+		if ( $deactivate ) {
+			return $this->client->removeLicenseFomSite( $oldKey );
+		}
 
-        if ( ! $isValid) {
-            add_settings_error('invalid-license-key', '', 'WP Deployer license could not be activated.');
-        }
+		$isValid = $this->client->registerKeyForSite( $key );
 
-        return $isValid;
-    }
+		if ( ! $isValid ) {
+			add_settings_error( 'invalid-license-key', '', 'WP Deployer license could not be activated.' );
+		}
+
+		return $isValid;
+	}
 }

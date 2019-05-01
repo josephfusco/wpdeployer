@@ -2,114 +2,104 @@
 
 namespace Deployer\License;
 
-class LicenseKey
-{
-    private $id;
-    private $email;
-    private $licenses;
-    private $token;
-    private $usedLicenses;
-    private $validUntil;
-    private $autoRenew;
+class LicenseKey {
 
-    public static function fromShipperResponseArray(array $array)
-    {
-        $key = new LicenseKey;
+	private $id;
+	private $email;
+	private $licenses;
+	private $token;
+	private $usedLicenses;
+	private $validUntil;
+	private $autoRenew;
 
-        $key->id = $array['id'];
-        $key->email = $array['email'];
-        $key->licenses = $array['allowed_licenses'];
-        $key->token = $array['token'];
-        $key->usedLicenses = $array['used_licenses'];
-        $key->validUntil = $array['valid_until'];
-        $key->autoRenew = $array['auto_renew'];
+	public static function fromShipperResponseArray( array $array ) {
+		$key = new LicenseKey();
 
-        return $key;
-    }
+		$key->id           = $array['id'];
+		$key->email        = $array['email'];
+		$key->licenses     = $array['allowed_licenses'];
+		$key->token        = $array['token'];
+		$key->usedLicenses = $array['used_licenses'];
+		$key->validUntil   = $array['valid_until'];
+		$key->autoRenew    = $array['auto_renew'];
 
-    public static function fromEddResponseArray(array $array)
-    {
-        $key = new LicenseKey;
+		return $key;
+	}
 
-        $key->id = null;
-        $key->email = $array['customer_email'];
-        $key->licenses = $array['license_limit'];
-        $key->token = $array['token'];
-        $key->usedLicenses = $array['site_count'];
-        $key->validUntil = $array['expires'];
-        $key->autoRenew = null;
+	public static function fromEddResponseArray( array $array ) {
+		$key = new LicenseKey();
 
-        return $key;
-    }
+		$key->id           = null;
+		$key->email        = $array['customer_email'];
+		$key->licenses     = $array['license_limit'];
+		$key->token        = $array['token'];
+		$key->usedLicenses = $array['site_count'];
+		$key->validUntil   = $array['expires'];
+		$key->autoRenew    = null;
 
-    public function id($id = null)
-    {
-        if ( ! is_null($id)) {
-            return $this->id = $id;
-        }
+		return $key;
+	}
 
-        return $this->id;
-    }
+	public function id( $id = null ) {
+		if ( ! is_null( $id ) ) {
+			return $this->id = $id;
+		}
 
-    public function email($email = null)
-    {
-        if ( ! is_null($email)) {
-            return $this->email = $email;
-        }
+		return $this->id;
+	}
 
-        return $this->email;
-    }
+	public function email( $email = null ) {
+		if ( ! is_null( $email ) ) {
+			return $this->email = $email;
+		}
 
-    public function licenses($licenses = null)
-    {
-        if ( ! is_null($licenses)) {
-            return $this->licenses = $licenses;
-        }
+		return $this->email;
+	}
 
-        return $this->licenses;
-    }
+	public function licenses( $licenses = null ) {
+		if ( ! is_null( $licenses ) ) {
+			return $this->licenses = $licenses;
+		}
 
-    public function token($token = null)
-    {
-        if ( ! is_null($token)) {
-            return $this->token = $token;
-        }
+		return $this->licenses;
+	}
 
-        return $this->token;
-    }
+	public function token( $token = null ) {
+		if ( ! is_null( $token ) ) {
+			return $this->token = $token;
+		}
 
-    public function usedLicenses($usedLicenses = null)
-    {
-        if ( ! is_null($usedLicenses)) {
-            return $this->usedLicenses = $usedLicenses;
-        }
+		return $this->token;
+	}
 
-        return $this->usedLicenses;
-    }
+	public function usedLicenses( $usedLicenses = null ) {
+		if ( ! is_null( $usedLicenses ) ) {
+			return $this->usedLicenses = $usedLicenses;
+		}
 
-    public function validUntil($validUntil = null)
-    {
-        if ( ! is_null($validUntil)) {
-            return $this->validUntil = $validUntil;
-        }
+		return $this->usedLicenses;
+	}
 
-        return $this->validUntil;
-    }
+	public function validUntil( $validUntil = null ) {
+		if ( ! is_null( $validUntil ) ) {
+			return $this->validUntil = $validUntil;
+		}
 
-    public function hasExpired()
-    {
-        $now = time();
-        $validUntil = strtotime($this->validUntil);
+		return $this->validUntil;
+	}
 
-        return $now > $validUntil;
-    }
+	public function hasExpired() {
+		$now        = time();
+		$validUntil = strtotime( $this->validUntil );
 
-    public function autoRenew($autoRenew = null)
-    {
-        if ( ! is_null($autoRenew)) {
-            return $this->autoRenew = $autoRenew;
-        }
+		return $now > $validUntil;
+	}
 
-        return $this->autoRenew;
-    }
+	public function autoRenew( $autoRenew = null ) {
+		if ( ! is_null( $autoRenew ) ) {
+			return $this->autoRenew = $autoRenew;
+		}
+
+		return $this->autoRenew;
+	}
 }

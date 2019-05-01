@@ -2,87 +2,86 @@
 
 namespace Deployer\License;
 
-class WpShipperClient implements LicenseApi
-{
-    private $baseUrl = 'https://api.wpshipper.com/';
+class WpShipperClient implements LicenseApi {
 
-    public function getLicenseKey($key)
-    {
-        if ( ! $key or $key === '') {
-            return false;
-        }
+	private $baseUrl = 'https://api.wpshipper.com/';
 
-        $result = wp_remote_get($this->baseUrl . 'license-keys/' . $key);
+	public function getLicenseKey( $key ) {
+		if ( ! $key or $key === '' ) {
+			return false;
+		}
 
-        if (is_wp_error($result)) {
-            add_settings_error('invalid-license-server-message', '', 'We couldn\'t check your license. Are you connected to the Internet?');
-        }
+		$result = wp_remote_get( $this->baseUrl . 'license-keys/' . $key );
 
-        $code = wp_remote_retrieve_response_code($result);
+		if ( is_wp_error( $result ) ) {
+			add_settings_error( 'invalid-license-server-message', '', 'We couldn\'t check your license. Are you connected to the Internet?' );
+		}
 
-        if ($code !== 200) {
-            return false;
-        }
+		$code = wp_remote_retrieve_response_code( $result );
 
-        $body = wp_remote_retrieve_body($result);
-        $array = json_decode($body, true);
+		if ( $code !== 200 ) {
+			return false;
+		}
 
-        if ( ! $array) {
-            return false;
-        }
+		$body  = wp_remote_retrieve_body( $result );
+		$array = json_decode( $body, true );
 
-        return LicenseKey::fromShipperResponseArray($array);
-    }
+		if ( ! $array ) {
+			return false;
+		}
 
-    public function registerKeyForSite($key)
-    {
-        $isValidKey = $this->getLicenseKey($key);
+		return LicenseKey::fromShipperResponseArray( $array );
+	}
 
-        if ( ! $isValidKey) {
-            return false;
-        }
+	public function registerKeyForSite( $key ) {
+		$isValidKey = $this->getLicenseKey( $key );
 
-        // Try to register new license
-        $args = array(
-            'body' => json_encode(array(
-                'site' => get_site_url(),
-            )),
-        );
-        $result = wp_remote_post($this->baseUrl . 'license-keys/' . $key . '/licenses', $args);
-        $code = wp_remote_retrieve_response_code($result);
+		if ( ! $isValidKey ) {
+			return false;
+		}
 
-        if ($code === 200) {
-            return $key;
-        }
+		// Try to register new license
+		$args   = [
+			'body' => json_encode(
+				[
+					'site' => get_site_url(),
+				]
+			),
+		];
+		$result = wp_remote_post( $this->baseUrl . 'license-keys/' . $key . '/licenses', $args );
+		$code   = wp_remote_retrieve_response_code( $result );
 
-        // Error handling
-        $body = wp_remote_retrieve_body($result);
-        $array = json_decode($body, true);
+		if ( $code === 200 ) {
+			return $key;
+		}
 
-        if ( ! $array) {
-            return false;
-        }
+		// Error handling
+		$body  = wp_remote_retrieve_body( $result );
+		$array = json_decode( $body, true );
 
-        if (isset($array['message'])) {
-            add_settings_error('invalid-license-server-message', '', $array['message']);
-        }
-    }
+		if ( ! $array ) {
+			return false;
+		}
 
-    public function removeLicenseFomSite($key)
-    {
-        $args = array(
-            'method' => 'DELETE',
-        );
-        $encodedUrl = urlencode(base64_encode(get_site_url()));
-        $result = wp_remote_post($this->baseUrl . 'license-keys/' . $key . '/licenses/' . $encodedUrl, $args);
-        $code = wp_remote_retrieve_response_code($result);
+		if ( isset( $array['message'] ) ) {
+			add_settings_error( 'invalid-license-server-message', '', $array['message'] );
+		}
+	}
 
-        if ($code === 200) {
-            return false;
-        }
+	public function removeLicenseFomSite( $key ) {
+		$args       = [
+			'method' => 'DELETE',
+		];
+		$encodedUrl = urlencode( base64_encode( get_site_url() ) );
+		$result     = wp_remote_post( $this->baseUrl . 'license-keys/' . $key . '/licenses/' . $encodedUrl, $args );
+		$code       = wp_remote_retrieve_response_code( $result );
 
-        add_settings_error('invalid-license-server-message', '', 'License could not be deleted from site. Please contact support.');
+		if ( $code === 200 ) {
+			return false;
+		}
 
-        return $key;
-    }
+		add_settings_error( 'invalid-license-server-message', '', 'License could not be deleted from site. Please contact support.' );
+
+		return $key;
+	}
 }

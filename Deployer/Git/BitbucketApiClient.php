@@ -2,60 +2,65 @@
 
 namespace Deployer\Git;
 
-class BitbucketApiClient
-{
-    public function setUpWebhookForRepository($webhook, BitbucketRepository $repository) {
-        $token = get_option('bb_token');
-        $accessToken = $repository->getAccessTokenFromRefreshToken($token);
+class BitbucketApiClient {
 
-        // Check if webhook already exists
-        $url = "https://api.bitbucket.org/2.0/repositories/{$repository->__toString()}/hooks?access_token={$accessToken}";
+	public function setUpWebhookForRepository( $webhook, BitbucketRepository $repository ) {
+		$token       = get_option( 'bb_token' );
+		$accessToken = $repository->getAccessTokenFromRefreshToken( $token );
 
-        $hookName = 'WP Deployer: ' . get_site_url();
+		// Check if webhook already exists
+		$url = "https://api.bitbucket.org/2.0/repositories/{$repository->__toString()}/hooks?access_token={$accessToken}";
 
-        $response = wp_remote_get($url);
+		$hookName = 'WP Deployer: ' . get_site_url();
 
-        if ($response instanceof \WP_Error) {
-            throw new \Exception('Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored.');
-        }
+		$response = wp_remote_get( $url );
 
-        $payload = json_decode(wp_remote_retrieve_body($response), true);
+		if ( $response instanceof \WP_Error ) {
+			throw new \Exception( 'Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored.' );
+		}
 
-        // Check if hook is already set up
-        foreach ($payload['values'] as $webhookPayload) {
-            if ($webhookPayload['description'] === $hookName) {
-                // Hook already exists
-                return null;
-            }
-        }
+		$payload = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        // Proceed to set up a new webhook
-        $payload = json_encode(array(
-            'description' => $hookName,
-            'url' => html_entity_decode($webhook),
-            'active' => true,
-            'events' => array(
-                'repo:push',
-            ),
-        ));
+		// Check if hook is already set up
+		foreach ( $payload['values'] as $webhookPayload ) {
+			if ( $webhookPayload['description'] === $hookName ) {
+				// Hook already exists
+				return null;
+			}
+		}
 
-        $url = "https://api.bitbucket.org/2.0/repositories/{$repository->__toString()}/hooks?access_token={$accessToken}";
+		// Proceed to set up a new webhook
+		$payload = json_encode(
+			[
+				'description' => $hookName,
+				'url'         => html_entity_decode( $webhook ),
+				'active'      => true,
+				'events'      => [
+					'repo:push',
+				],
+			]
+		);
 
-        $response = wp_remote_post($url, array(
-            'body' => $payload,
-            'headers' => array(
-                'Content-Type' => 'application/json',
-            ),
-        ));
+		$url = "https://api.bitbucket.org/2.0/repositories/{$repository->__toString()}/hooks?access_token={$accessToken}";
 
-        $responseCode = wp_remote_retrieve_response_code($response);
+		$response = wp_remote_post(
+			$url,
+			[
+				'body'    => $payload,
+				'headers' => [
+					'Content-Type' => 'application/json',
+				],
+			]
+		);
 
-        if ($responseCode === 400) {
-            throw new \Exception('Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored. (400 bad request)');
-        }
+		$responseCode = wp_remote_retrieve_response_code( $response );
 
-        if ($response instanceof \WP_Error) {
-            throw new \Exception('Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored.');
-        }
-    }
+		if ( $responseCode === 400 ) {
+			throw new \Exception( 'Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored. (400 bad request)' );
+		}
+
+		if ( $response instanceof \WP_Error ) {
+			throw new \Exception( 'Webhook was not updated on Bitbucket. Make sure a valid Bitbucket token is stored.' );
+		}
+	}
 }

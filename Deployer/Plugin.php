@@ -4,125 +4,111 @@ namespace Deployer;
 
 use Deployer\Git\Repository;
 
-class Plugin implements Package
-{
-    protected $file;
-    protected $name;
-    protected $pluginURI;
-    protected $version;
-    protected $description;
-    protected $author;
-    protected $authorURI;
-    protected $textDomain;
-    protected $domainPath;
-    protected $network;
-    protected $title;
-    protected $authorName;
-    protected $repository;
-    protected $deployerStatus;
-    protected $pushToDeploy;
-    protected $host;
-    protected $subdirectory;
+class Plugin implements Package {
 
-    public static function fromWpArray($file, array $array)
-    {
-        $plugin = new static();
+	protected $file;
+	protected $name;
+	protected $pluginURI;
+	protected $version;
+	protected $description;
+	protected $author;
+	protected $authorURI;
+	protected $textDomain;
+	protected $domainPath;
+	protected $network;
+	protected $title;
+	protected $authorName;
+	protected $repository;
+	protected $deployerStatus;
+	protected $pushToDeploy;
+	protected $host;
+	protected $subdirectory;
 
-        $plugin->file = $file;
-        $plugin->name = $array['Name'];
-        $plugin->pluginURI = $array['PluginURI'];
-        $plugin->version = $array['Version'];
-        $plugin->description = $array['Description'];
-        $plugin->author = $array['Author'];
-        $plugin->authorURI = $array['AuthorURI'];
-        $plugin->textDomain = $array['TextDomain'];
-        $plugin->domainPath = $array['DomainPath'];
-        $plugin->network = $array['Network'];
-        $plugin->title = $array['Title'];
-        $plugin->authorName = $array['AuthorName'];
+	public static function fromWpArray( $file, array $array ) {
+		$plugin = new static();
 
-        return $plugin;
-    }
+		$plugin->file        = $file;
+		$plugin->name        = $array['Name'];
+		$plugin->pluginURI   = $array['PluginURI'];
+		$plugin->version     = $array['Version'];
+		$plugin->description = $array['Description'];
+		$plugin->author      = $array['Author'];
+		$plugin->authorURI   = $array['AuthorURI'];
+		$plugin->textDomain  = $array['TextDomain'];
+		$plugin->domainPath  = $array['DomainPath'];
+		$plugin->network     = $array['Network'];
+		$plugin->title       = $array['Title'];
+		$plugin->authorName  = $array['AuthorName'];
 
-    public function getSlug()
-    {
-        if ( ! $this->hasSubdirectory()) {
-            return $this->repository->getSlug();
-        }
+		return $plugin;
+	}
 
-        return end(explode('/', $this->getSubdirectory()));
-    }
+	public function getSlug() {
+		if ( ! $this->hasSubdirectory() ) {
+			return $this->repository->getSlug();
+		}
 
-    public function getSubdirectory()
-    {
-        return $this->subdirectory;
-    }
+		return end( explode( '/', $this->getSubdirectory() ) );
+	}
 
-    public function hasSubdirectory()
-    {
-        return ! (is_null($this->getSubdirectory()) or $this->getSubdirectory() === '');
-    }
+	public function getSubdirectory() {
+		return $this->subdirectory;
+	}
 
-    public function setSubdirectory($subdirectory)
-    {
-        $this->subdirectory = $subdirectory;
-    }
+	public function hasSubdirectory() {
+		return ! ( is_null( $this->getSubdirectory() ) or $this->getSubdirectory() === '' );
+	}
 
-    public function setDeployerStatus($deployerStatus)
-    {
-        $this->deployerStatus = $deployerStatus;
-    }
+	public function setSubdirectory( $subdirectory ) {
+		$this->subdirectory = $subdirectory;
+	}
 
-    public function setPushToDeploy($pushToDeploy)
-    {
-        $this->pushToDeploy = $pushToDeploy;
-    }
+	public function setDeployerStatus( $deployerStatus ) {
+		$this->deployerStatus = $deployerStatus;
+	}
 
-    public function getPushToDeployUrl()
-    {
-        $repo = base64_encode($this->repository);
+	public function setPushToDeploy( $pushToDeploy ) {
+		$this->pushToDeploy = $pushToDeploy;
+	}
 
-        $url = sprintf("%s?wpdeployer-hook&token=%s&repo=%s",
-            get_site_url(),
-            get_option('wpdeployer_token'),
-            $repo
-        );
+	public function getPushToDeployUrl() {
+		$repo = base64_encode( $this->repository );
 
-        return esc_attr($url);
-    }
+		$url = sprintf(
+			'%s?wpdeployer-hook&token=%s&repo=%s',
+			get_site_url(),
+			get_option( 'wpdeployer_token' ),
+			$repo
+		);
 
-    public function setRepository(Repository $repository)
-    {
-        $this->repository = $repository;
-    }
+		return esc_attr( $url );
+	}
 
-    public function setHost($host)
-    {
-        $this->host = $host;
-    }
+	public function setRepository( Repository $repository ) {
+		$this->repository = $repository;
+	}
 
-    public function __get($name)
-    {
-        $method = "get" . ucfirst($name);
+	public function setHost( $host ) {
+		$this->host = $host;
+	}
 
-        if (method_exists($this, $method))
-        {
-            return $this->$method();
-        }
+	public function __get( $name ) {
+		$method = 'get' . ucfirst( $name );
 
-        if (isset($this->$name))
-        {
-            return $this->$name;
-        }
-    }
+		if ( method_exists( $this, $method ) ) {
+			return $this->$method();
+		}
 
-    public function __toString()
-    {
-        return $this->file;
-    }
+		if ( isset( $this->$name ) ) {
+			return $this->$name;
+		}
+	}
 
-    public function getIdentifier()
-    {
-        return $this->file;
-    }
+	public function __toString() {
+		return $this->file;
+	}
+
+	public function getIdentifier() {
+		return $this->file;
+	}
 }

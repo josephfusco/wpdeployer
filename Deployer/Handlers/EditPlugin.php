@@ -7,37 +7,41 @@ use Deployer\Commands\EditPlugin as EditPluginCommand;
 use Deployer\Git\Repository;
 use Deployer\Storage\PluginRepository;
 
-class EditPlugin
-{
-    /**
-     * @var PluginRepository
-     */
-    private $plugins;
+class EditPlugin {
 
-    /**
-     * @param PluginRepository $plugins
-     * @internal param Dashboard $dashboard
-     */
-    public function __construct(PluginRepository $plugins)
-    {
-        $this->plugins = $plugins;
-    }
+	/**
+	 * @var PluginRepository
+	 */
+	private $plugins;
 
-    public function handle(EditPluginCommand $command)
-    {
-        $repository = new Repository($command->repository);
-        $repository->setBranch($command->branch);
+	/**
+	 * @param PluginRepository $plugins
+	 * @internal param Dashboard $dashboard
+	 */
+	public function __construct( PluginRepository $plugins ) {
+		$this->plugins = $plugins;
+	}
 
-        $this->plugins->editPlugin($command->file, array(
-            'repository' => $repository,
-            'branch' => $repository->getBranch(),
-            'status' => $command->status,
-            'ptd' => $command->pushToDeploy,
-            'subdirectory' => $command->subdirectory,
-        ));
+	public function handle( EditPluginCommand $command ) {
+		$repository = new Repository( $command->repository );
+		$repository->setBranch( $command->branch );
 
-        do_action('wpdeployer_plugin_was_edited', new PluginWasEdited(
-            $this->plugins->deployerPluginFromRepository($repository)
-        ));
-    }
+		$this->plugins->editPlugin(
+			$command->file,
+			[
+				'repository'   => $repository,
+				'branch'       => $repository->getBranch(),
+				'status'       => $command->status,
+				'ptd'          => $command->pushToDeploy,
+				'subdirectory' => $command->subdirectory,
+			]
+		);
+
+		do_action(
+			'wpdeployer_plugin_was_edited',
+			new PluginWasEdited(
+				$this->plugins->deployerPluginFromRepository( $repository )
+			)
+		);
+	}
 }

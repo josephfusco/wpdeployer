@@ -7,43 +7,43 @@ use Deployer\Git\BitbucketRepository;
 use Deployer\Git\GitHubApiClient;
 use Deployer\Git\GitHubRepository;
 
-class SetUpWebhookForTheme
-{
-    /**
-     * @var BitbucketApiClient
-     */
-    public $bitbucket;
+class SetUpWebhookForTheme {
 
-    /**
-     * @var GitHubApiClient
-     */
-    private $gitHub;
+	/**
+	 * @var BitbucketApiClient
+	 */
+	public $bitbucket;
 
-    /**
-     * @param BitbucketApiClient $bitbucket
-     * @param GitHubApiClient $gitHub
-     */
-    public function __construct(BitbucketApiClient $bitbucket, GitHubApiClient $gitHub) {
-        $this->bitbucket = $bitbucket;
-        $this->gitHub = $gitHub;
-    }
+	/**
+	 * @var GitHubApiClient
+	 */
+	private $gitHub;
 
-    public function handle($action) {
-        $theme = $action->theme;
+	/**
+	 * @param BitbucketApiClient $bitbucket
+	 * @param GitHubApiClient    $gitHub
+	 */
+	public function __construct( BitbucketApiClient $bitbucket, GitHubApiClient $gitHub ) {
+		$this->bitbucket = $bitbucket;
+		$this->gitHub    = $gitHub;
+	}
 
-        $enablePushToDeploy = (bool) $theme->pushToDeploy;
+	public function handle( $action ) {
+		$theme = $action->theme;
 
-        // Early return if Push-to-Deploy is not enabled
-        if ( ! $enablePushToDeploy) {
-            return null;
-        }
+		$enablePushToDeploy = (bool) $theme->pushToDeploy;
 
-        if ($theme->repository instanceof GitHubRepository) {
-            $this->gitHub->setUpWebhookForRepository($theme->getPushToDeployUrl(), $theme->repository);
-        }
+		// Early return if Push-to-Deploy is not enabled
+		if ( ! $enablePushToDeploy ) {
+			return null;
+		}
 
-        if ($theme->repository instanceof BitbucketRepository) {
-            $this->bitbucket->setUpWebhookForRepository($theme->getPushToDeployUrl(), $theme->repository);
-        }
-    }
+		if ( $theme->repository instanceof GitHubRepository ) {
+			$this->gitHub->setUpWebhookForRepository( $theme->getPushToDeployUrl(), $theme->repository );
+		}
+
+		if ( $theme->repository instanceof BitbucketRepository ) {
+			$this->bitbucket->setUpWebhookForRepository( $theme->getPushToDeployUrl(), $theme->repository );
+		}
+	}
 }

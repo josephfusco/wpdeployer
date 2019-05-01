@@ -12,74 +12,72 @@ use Deployer\Deployer;
 use Deployer\Storage\PluginRepository;
 use Deployer\WordPress\PluginUpgrader;
 
-class InstallPlugin
-{
-    /**
-     * @var Deployer
-     */
-    private $deployer;
+class InstallPlugin {
 
-    /**
-     * @var PluginRepository
-     */
-    private $plugins;
+	/**
+	 * @var Deployer
+	 */
+	private $deployer;
 
-    /**
-     * @var PluginUpgrader
-     */
-    private $upgrader;
+	/**
+	 * @var PluginRepository
+	 */
+	private $plugins;
 
-    /**
-     * @var RepositoryFactory
-     */
-    private $repositoryFactory;
+	/**
+	 * @var PluginUpgrader
+	 */
+	private $upgrader;
 
-    /**
-     * @param Deployer $deployer
-     * @param PluginRepository $plugins
-     * @param PluginUpgrader $upgrader
-     * @param RepositoryFactory $repositoryFactory
-     */
-    public function __construct(Deployer $deployer, PluginRepository $plugins, PluginUpgrader $upgrader, RepositoryFactory $repositoryFactory)
-    {
-        $this->deployer = $deployer;
-        $this->plugins = $plugins;
-        $this->upgrader = $upgrader;
-        $this->repositoryFactory = $repositoryFactory;
-    }
+	/**
+	 * @var RepositoryFactory
+	 */
+	private $repositoryFactory;
 
-    public function handle(InstallPluginCommand $command)
-    {
-        $plugin = new Plugin;
+	/**
+	 * @param Deployer          $deployer
+	 * @param PluginRepository  $plugins
+	 * @param PluginUpgrader    $upgrader
+	 * @param RepositoryFactory $repositoryFactory
+	 */
+	public function __construct( Deployer $deployer, PluginRepository $plugins, PluginUpgrader $upgrader, RepositoryFactory $repositoryFactory ) {
+		$this->deployer          = $deployer;
+		$this->plugins           = $plugins;
+		$this->upgrader          = $upgrader;
+		$this->repositoryFactory = $repositoryFactory;
+	}
 
-        $repository = $this->repositoryFactory->build(
-            $command->type,
-            $command->repository
-        );
+	public function handle( InstallPluginCommand $command ) {
+		$plugin = new Plugin();
 
-        if ($command->private and $this->deployer->hasValidLicenseKey()) {
-            $repository->makePrivate();
-        }
+		$repository = $this->repositoryFactory->build(
+			$command->type,
+			$command->repository
+		);
 
-        $repository->setBranch($command->branch);
-        $plugin->setRepository($repository);
-        $plugin->setSubdirectory($command->subdirectory);
+		if ( $command->private and $this->deployer->hasValidLicenseKey() ) {
+			$repository->makePrivate();
+		}
 
-        $command->dryRun ?: $this->upgrader->installPlugin($plugin);
+		$repository->setBranch( $command->branch );
+		$plugin->setRepository( $repository );
+		$plugin->setSubdirectory( $command->subdirectory );
 
-        if ($command->subdirectory) {
-            $slug = end(explode('/', $command->subdirectory));
-        } else {
-            $slug = $repository->getSlug();
-        }
+		$command->dryRun ?: $this->upgrader->installPlugin( $plugin );
 
-        $plugin = $this->plugins->fromSlug($slug);
-        $plugin->setRepository($repository);
-        $plugin->setPushToDeploy($command->ptd);
-        $plugin->setSubdirectory($command->subdirectory);
+		if ( $command->subdirectory ) {
+			$slug = end( explode( '/', $command->subdirectory ) );
+		} else {
+			$slug = $repository->getSlug();
+		}
 
-        $this->plugins->store($plugin);
+		$plugin = $this->plugins->fromSlug( $slug );
+		$plugin->setRepository( $repository );
+		$plugin->setPushToDeploy( $command->ptd );
+		$plugin->setSubdirectory( $command->subdirectory );
 
-        do_action('wpdeployer_plugin_was_installed', new PluginWasInstalled($plugin));
-    }
+		$this->plugins->store( $plugin );
+
+		do_action( 'wpdeployer_plugin_was_installed', new PluginWasInstalled( $plugin ) );
+	}
 }

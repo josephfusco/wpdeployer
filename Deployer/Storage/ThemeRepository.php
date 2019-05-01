@@ -6,192 +6,189 @@ use Deployer\Git\Repository;
 use Deployer\Git\RepositoryFactory;
 use Deployer\Theme;
 
-class ThemeRepository
-{
-    /**
-     * @var RepositoryFactory
-     */
-    private $repositoryFactory;
+class ThemeRepository {
 
-    /**
-     * @param RepositoryFactory $repositoryFactory
-     */
-    public function __construct(RepositoryFactory $repositoryFactory)
-    {
-        $this->repositoryFactory = $repositoryFactory;
-    }
+	/**
+	 * @var RepositoryFactory
+	 */
+	private $repositoryFactory;
 
-    public function allDeployerThemes()
-    {
-        global $wpdb;
+	/**
+	 * @param RepositoryFactory $repositoryFactory
+	 */
+	public function __construct( RepositoryFactory $repositoryFactory ) {
+		$this->repositoryFactory = $repositoryFactory;
+	}
 
-        $table_name = deployerTableName();
+	public function allDeployerThemes() {
+		global $wpdb;
 
-        $rows = $wpdb->get_results("SELECT * FROM $table_name WHERE type = 2");
+		$table_name = deployerTableName();
 
-        $themes = array();
+		$rows = $wpdb->get_results( "SELECT * FROM $table_name WHERE type = 2" );
 
-        foreach ($rows as $row) {
+		$themes = [];
 
-            // This is our time to do some cleaning up
-            if ( ! file_exists(get_theme_root() . "/" . $row->package)) {
-                $this->delete($row->id);
-                continue;
-            }
+		foreach ( $rows as $row ) {
 
-            $object = wp_get_theme($row->package);
-            $themes[$row->package] = Theme::fromWpThemeObject($object);
-            $repository = new Repository($row->repository);
-            $repository->setBranch($row->branch);
-            $themes[$row->package]->setRepository($repository);
-            $themes[$row->package]->setPushToDeploy($row->ptd);
-            $themes[$row->package]->setHost($row->host);
-            $themes[$row->package]->setSubdirectory($row->subdirectory);
-        }
+			// This is our time to do some cleaning up
+			if ( ! file_exists( get_theme_root() . '/' . $row->package ) ) {
+				$this->delete( $row->id );
+				continue;
+			}
 
-        return $themes;
-    }
+			$object                  = wp_get_theme( $row->package );
+			$themes[ $row->package ] = Theme::fromWpThemeObject( $object );
+			$repository              = new Repository( $row->repository );
+			$repository->setBranch( $row->branch );
+			$themes[ $row->package ]->setRepository( $repository );
+			$themes[ $row->package ]->setPushToDeploy( $row->ptd );
+			$themes[ $row->package ]->setHost( $row->host );
+			$themes[ $row->package ]->setSubdirectory( $row->subdirectory );
+		}
 
-    public function delete($id)
-    {
-        global $wpdb;
+		return $themes;
+	}
 
-        $table_name = deployerTableName();
+	public function delete( $id ) {
+		global $wpdb;
 
-        $wpdb->delete($table_name, array('id' => sanitize_text_field($id)));
-    }
+		$table_name = deployerTableName();
 
-    public function unlink($stylesheet)
-    {
-        global $wpdb;
+		$wpdb->delete( $table_name, [ 'id' => sanitize_text_field( $id ) ] );
+	}
 
-        $table_name = deployerTableName();
+	public function unlink( $stylesheet ) {
+		global $wpdb;
 
-        $wpdb->delete($table_name, array('package' => sanitize_text_field($stylesheet)));
-    }
+		$table_name = deployerTableName();
 
-    public function editTheme($stylesheet, $input)
-    {
-        global $wpdb;
+		$wpdb->delete( $table_name, [ 'package' => sanitize_text_field( $stylesheet ) ] );
+	}
 
-        $model = new PackageModel(array(
-            'package' => $stylesheet,
-            'repository' => $input['repository'],
-            'branch' => $input['branch'],
-            'ptd' => $input['ptd'],
-            'subdirectory' => $input['subdirectory'],
-        ));
+	public function editTheme( $stylesheet, $input ) {
+		global $wpdb;
 
-        $table_name = deployerTableName();
+		$model = new PackageModel(
+			[
+				'package'      => $stylesheet,
+				'repository'   => $input['repository'],
+				'branch'       => $input['branch'],
+				'ptd'          => $input['ptd'],
+				'subdirectory' => $input['subdirectory'],
+			]
+		);
 
-        return $wpdb->update(
-            $table_name,
-            array(
-                'repository' => $model->repository,
-                'branch' => $model->branch,
-                'ptd' => $model->ptd,
-                'subdirectory' => $model->subdirectory,
-            ),
-            array('package' => $model->package)
-        );
-    }
+		$table_name = deployerTableName();
 
-    /**
-     * @param $slug
-     * @return Theme
-     */
-    public function fromSlug($slug)
-    {
-        $wpTheme = wp_get_theme($slug);
+		return $wpdb->update(
+			$table_name,
+			[
+				'repository'   => $model->repository,
+				'branch'       => $model->branch,
+				'ptd'          => $model->ptd,
+				'subdirectory' => $model->subdirectory,
+			],
+			[ 'package' => $model->package ]
+		);
+	}
 
-        return Theme::fromWpThemeObject($wpTheme);
-    }
+	/**
+	 * @param $slug
+	 * @return Theme
+	 */
+	public function fromSlug( $slug ) {
+		$wpTheme = wp_get_theme( $slug );
 
-    /**
-     * @param $repository
-     * @return Theme
-     * @throws ThemeNotFound
-     */
-    public function deployerThemeFromRepository($repository)
-    {
-        global $wpdb;
+		return Theme::fromWpThemeObject( $wpTheme );
+	}
 
-        $table_name = deployerTableName();
+	/**
+	 * @param $repository
+	 * @return Theme
+	 * @throws ThemeNotFound
+	 */
+	public function deployerThemeFromRepository( $repository ) {
+		global $wpdb;
 
-        $model = new PackageModel(array('repository' => $repository));
+		$table_name = deployerTableName();
 
-        $row = $wpdb->get_row("SELECT * FROM $table_name WHERE type = 2 AND repository = '{$model->repository}'");
+		$model = new PackageModel( [ 'repository' => $repository ] );
 
-        if ( ! $row or ! file_exists(get_theme_root() . "/" . $row->package)) {
-            throw new ThemeNotFound('Couldn\'t find theme.');
-        }
+		$row = $wpdb->get_row( "SELECT * FROM $table_name WHERE type = 2 AND repository = '{$model->repository}'" );
 
-        $object = wp_get_theme($row->package);
-        $theme = Theme::fromWpThemeObject($object);
+		if ( ! $row or ! file_exists( get_theme_root() . '/' . $row->package ) ) {
+			throw new ThemeNotFound( 'Couldn\'t find theme.' );
+		}
 
-        $repository = $this->repositoryFactory->build(
-            $row->host,
-            $row->repository
-        );
+		$object = wp_get_theme( $row->package );
+		$theme  = Theme::fromWpThemeObject( $object );
 
-        $repository->setBranch($row->branch);
-        $theme->setRepository($repository);
-        $theme->setPushToDeploy($row->ptd);
-        $theme->setHost($row->host);
-        $theme->setSubdirectory($row->subdirectory);
+		$repository = $this->repositoryFactory->build(
+			$row->host,
+			$row->repository
+		);
 
-        if ($row->private)
-            $theme->repository->makePrivate();
+		$repository->setBranch( $row->branch );
+		$theme->setRepository( $repository );
+		$theme->setPushToDeploy( $row->ptd );
+		$theme->setHost( $row->host );
+		$theme->setSubdirectory( $row->subdirectory );
 
-        return $theme;
-    }
+		if ( $row->private ) {
+			$theme->repository->makePrivate();
+		}
 
-    public function store(Theme $theme)
-    {
-        global $wpdb;
+		return $theme;
+	}
 
-        $model = new PackageModel(array(
-            'package' => $theme->stylesheet,
-            'repository' => $theme->repository,
-            'branch' => $theme->repository->getBranch(),
-            'status' => 1,
-            'host' => $theme->repository->code,
-            'private' => $theme->repository->isPrivate(),
-            'ptd' => $theme->pushToDeploy,
-            'subdirectory' => $theme->getSubdirectory(),
-        ));
+	public function store( Theme $theme ) {
+		global $wpdb;
 
-        $table_name = deployerTableName();
+		$model = new PackageModel(
+			[
+				'package'      => $theme->stylesheet,
+				'repository'   => $theme->repository,
+				'branch'       => $theme->repository->getBranch(),
+				'status'       => 1,
+				'host'         => $theme->repository->code,
+				'private'      => $theme->repository->isPrivate(),
+				'ptd'          => $theme->pushToDeploy,
+				'subdirectory' => $theme->getSubdirectory(),
+			]
+		);
 
-        $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE package = '$model->package'");
+		$table_name = deployerTableName();
 
-        if ($count !== '0') {
+		$count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name WHERE package = '$model->package'" );
 
-            return $wpdb->update(
-                $table_name,
-                array(
-                    'status' => $model->status,
-                    'branch' => $model->branch,
-                    'subdirectory' => $model->subdirectory,
-                ),
-                array('package' => $model->package)
-            );
+		if ( $count !== '0' ) {
 
-        }
+			return $wpdb->update(
+				$table_name,
+				[
+					'status'       => $model->status,
+					'branch'       => $model->branch,
+					'subdirectory' => $model->subdirectory,
+				],
+				[ 'package' => $model->package ]
+			);
 
-        return $wpdb->insert(
-            $table_name,
-            array(
-                'package' => $model->package,
-                'repository' => $model->repository,
-                'branch' => $model->branch,
-                'type' => 2,
-                'status' => $model->status,
-                'host' => $model->host,
-                'private' => $model->private,
-                'ptd' => $model->ptd,
-                'subdirectory' => $model->subdirectory,
-            )
-        );
-    }
+		}
+
+		return $wpdb->insert(
+			$table_name,
+			[
+				'package'      => $model->package,
+				'repository'   => $model->repository,
+				'branch'       => $model->branch,
+				'type'         => 2,
+				'status'       => $model->status,
+				'host'         => $model->host,
+				'private'      => $model->private,
+				'ptd'          => $model->ptd,
+				'subdirectory' => $model->subdirectory,
+			]
+		);
+	}
 }

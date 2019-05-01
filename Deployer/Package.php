@@ -3,5 +3,5 @@
 namespace Deployer;
 
 interface Package {
-    public function getIdentifier();
+	public function getIdentifier();
 }

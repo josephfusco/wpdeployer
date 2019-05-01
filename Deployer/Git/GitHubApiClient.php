@@ -2,30 +2,35 @@
 
 namespace Deployer\Git;
 
-class GitHubApiClient
-{
-    public function setUpWebhookForRepository($webhook, GitHubRepository $repository) {
-        $token = get_option('gh_token');
+class GitHubApiClient {
 
-        $payload = json_encode(array(
-            'name' => 'web',
-            'active' => true,
-            'config' => array(
-                'url' => html_entity_decode($webhook),
-            ),
-        ));
+	public function setUpWebhookForRepository( $webhook, GitHubRepository $repository ) {
+		$token = get_option( 'gh_token' );
 
-        $url = "https://api.github.com/repos/{$repository->__toString()}/hooks?access_token={$token}";
+		$payload = json_encode(
+			[
+				'name'   => 'web',
+				'active' => true,
+				'config' => [
+					'url' => html_entity_decode( $webhook ),
+				],
+			]
+		);
 
-        $response = wp_remote_post($url, array(
-            'body' => $payload,
-            'headers' => array(
-                'Content-Type' => 'application/json',
-            ),
-        ));
+		$url = "https://api.github.com/repos/{$repository->__toString()}/hooks?access_token={$token}";
 
-        if ($response instanceof \WP_Error) {
-            throw new \Exception('Webhook was not updated on GitHub. Make sure a valid GitHub token is stored.');
-        }
-    }
+		$response = wp_remote_post(
+			$url,
+			[
+				'body'    => $payload,
+				'headers' => [
+					'Content-Type' => 'application/json',
+				],
+			]
+		);
+
+		if ( $response instanceof \WP_Error ) {
+			throw new \Exception( 'Webhook was not updated on GitHub. Make sure a valid GitHub token is stored.' );
+		}
+	}
 }

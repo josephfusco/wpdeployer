@@ -4,23 +4,23 @@ namespace Deployer\Git;
 
 use Exception;
 
-class GitHubRepository extends Repository
-{
-    public $code = 'gh';
+class GitHubRepository extends Repository {
 
-    public function getZipUrl()
-    {
-        $url = 'https://api.github.com/repos/' . $this->handle . '/zipball/' . $this->getBranch() . '?dir=/wpdeployer';
+	public $code = 'gh';
 
-        if ($this->isPrivate()) {
-            $token = get_option('gh_token');
+	public function getZipUrl() {
+		$url = 'https://api.github.com/repos/' . $this->handle . '/zipball/' . $this->getBranch() . '?dir=/wpdeployer';
 
-            if ( is_string($token) && $token === '')
-                throw new Exception('No GitHub token stored.');
+		if ( $this->isPrivate() ) {
+			$token = get_option( 'gh_token' );
 
-            return $url . "&access_token=" . $token;
-        }
+			if ( is_string( $token ) && $token === '' ) {
+				throw new Exception( 'No GitHub token stored.' );
+			}
 
-        return $url;
-    }
+			return $url . '&access_token=' . $token;
+		}
+
+		return $url;
+	}
 }

@@ -7,34 +7,32 @@ use Deployer\Commands\UpdateTheme as UpdateThemeCommand;
 use Deployer\Storage\ThemeRepository;
 use Deployer\WordPress\ThemeUpgrader;
 
-class UpdateTheme
-{
-    /**
-     * @var ThemeRepository
-     */
-    private $themes;
+class UpdateTheme {
 
-    /**
-     * @var ThemeUpgrader
-     */
-    private $upgrader;
+	/**
+	 * @var ThemeRepository
+	 */
+	private $themes;
 
-    /**
-     * @param ThemeRepository $themes
-     * @param ThemeUpgrader $upgrader
-     */
-    public function __construct(ThemeRepository $themes, ThemeUpgrader $upgrader)
-    {
-        $this->themes = $themes;
-        $this->upgrader = $upgrader;
-    }
+	/**
+	 * @var ThemeUpgrader
+	 */
+	private $upgrader;
 
-    public function handle(UpdateThemeCommand $command)
-    {
-        $theme = $this->themes->deployerThemeFromRepository($command->repository);
+	/**
+	 * @param ThemeRepository $themes
+	 * @param ThemeUpgrader   $upgrader
+	 */
+	public function __construct( ThemeRepository $themes, ThemeUpgrader $upgrader ) {
+		$this->themes   = $themes;
+		$this->upgrader = $upgrader;
+	}
 
-        $this->upgrader->upgradeTheme($theme);
+	public function handle( UpdateThemeCommand $command ) {
+		$theme = $this->themes->deployerThemeFromRepository( $command->repository );
 
-        do_action('wpdeployer_theme_was_updated', new ThemeWasUpdated($theme));
-    }
+		$this->upgrader->upgradeTheme( $theme );
+
+		do_action( 'wpdeployer_theme_was_updated', new ThemeWasUpdated( $theme ) );
+	}
 }

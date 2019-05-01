@@ -2,50 +2,47 @@
 
 namespace Deployer\Storage;
 
-class Database
-{
-    public static $deployer_db_version = '1.0';
+class Database {
 
-    public function cleanup()
-    {
-        global $wpdb;
+	public static $deployer_db_version = '1.0';
 
-        $table_name = deployerTableName();
+	public function cleanup() {
+		global $wpdb;
 
-        $rows = $wpdb->get_results("SELECT * FROM {$table_name}");
+		$table_name = deployerTableName();
 
-        foreach ($rows as $row) {
+		$rows = $wpdb->get_results( "SELECT * FROM {$table_name}" );
 
-            if ($row->type === '1' && ! file_exists(WP_PLUGIN_DIR . "/" . $row->package)) {
-                $this->delete($row->id);
-                continue;
-            }
+		foreach ( $rows as $row ) {
 
-            if ($row->type === '2' && ! file_exists(get_theme_root() . "/" . $row->package)) {
-                $this->delete($row->id);
-                continue;
-            }
-        }
-    }
+			if ( $row->type === '1' && ! file_exists( WP_PLUGIN_DIR . '/' . $row->package ) ) {
+				$this->delete( $row->id );
+				continue;
+			}
 
-    public function delete($id)
-    {
-        global $wpdb;
+			if ( $row->type === '2' && ! file_exists( get_theme_root() . '/' . $row->package ) ) {
+				$this->delete( $row->id );
+				continue;
+			}
+		}
+	}
 
-        $table_name = deployerTableName();
+	public function delete( $id ) {
+		global $wpdb;
 
-        $wpdb->delete($table_name, array('id' => sanitize_text_field($id)));
-    }
+		$table_name = deployerTableName();
 
-    public function install()
-    {
-        global $wpdb;
+		$wpdb->delete( $table_name, [ 'id' => sanitize_text_field( $id ) ] );
+	}
 
-        $table_name = deployerTableName();
+	public function install() {
+		global $wpdb;
 
-        $charset_collate = $wpdb->get_charset_collate();
+		$table_name = deployerTableName();
 
-        $sql = "CREATE TABLE $table_name (
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             package varchar(255) NOT NULL,
             repository varchar(255) NOT NULL,
@@ -59,18 +56,17 @@ class Database
             UNIQUE KEY id (id)
         ) $charset_collate;";
 
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        dbDelta( $sql );
-    }
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql );
+	}
 
-    public function uninstall()
-    {
-        global $wpdb;
+	public function uninstall() {
+		global $wpdb;
 
-        $table_name = deployerTableName();
+		$table_name = deployerTableName();
 
-        $sql = "DROP TABLE IF EXISTS $table_name;";
+		$sql = "DROP TABLE IF EXISTS $table_name;";
 
-        $wpdb->query($sql);
-    }
+		$wpdb->query( $sql );
+	}
 }

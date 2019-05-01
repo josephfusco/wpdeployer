@@ -7,43 +7,43 @@ use Deployer\Git\BitbucketRepository;
 use Deployer\Git\GitHubApiClient;
 use Deployer\Git\GitHubRepository;
 
-class SetUpWebhookForPlugin
-{
-    /**
-     * @var BitbucketApiClient
-     */
-    public $bitbucket;
+class SetUpWebhookForPlugin {
 
-    /**
-     * @var GitHubApiClient
-     */
-    private $gitHub;
+	/**
+	 * @var BitbucketApiClient
+	 */
+	public $bitbucket;
 
-    /**
-     * @param BitbucketApiClient $bitbucket
-     * @param GitHubApiClient $gitHub
-     */
-    public function __construct(BitbucketApiClient $bitbucket, GitHubApiClient $gitHub) {
-        $this->bitbucket = $bitbucket;
-        $this->gitHub = $gitHub;
-    }
+	/**
+	 * @var GitHubApiClient
+	 */
+	private $gitHub;
 
-    public function handle($action) {
-        $plugin = $action->plugin;
+	/**
+	 * @param BitbucketApiClient $bitbucket
+	 * @param GitHubApiClient    $gitHub
+	 */
+	public function __construct( BitbucketApiClient $bitbucket, GitHubApiClient $gitHub ) {
+		$this->bitbucket = $bitbucket;
+		$this->gitHub    = $gitHub;
+	}
 
-        $enablePushToDeploy = (bool) $plugin->pushToDeploy;
+	public function handle( $action ) {
+		$plugin = $action->plugin;
 
-        // Early return if Push-to-Deploy is not enabled
-        if ( ! $enablePushToDeploy) {
-            return null;
-        }
+		$enablePushToDeploy = (bool) $plugin->pushToDeploy;
 
-        if ($plugin->repository instanceof GitHubRepository) {
-            $this->gitHub->setUpWebhookForRepository($plugin->getPushToDeployUrl(), $plugin->repository);
-        }
+		// Early return if Push-to-Deploy is not enabled
+		if ( ! $enablePushToDeploy ) {
+			return null;
+		}
 
-        if ($plugin->repository instanceof BitbucketRepository) {
-            $this->bitbucket->setUpWebhookForRepository($plugin->getPushToDeployUrl(), $plugin->repository);
-        }
-    }
+		if ( $plugin->repository instanceof GitHubRepository ) {
+			$this->gitHub->setUpWebhookForRepository( $plugin->getPushToDeployUrl(), $plugin->repository );
+		}
+
+		if ( $plugin->repository instanceof BitbucketRepository ) {
+			$this->bitbucket->setUpWebhookForRepository( $plugin->getPushToDeployUrl(), $plugin->repository );
+		}
+	}
 }

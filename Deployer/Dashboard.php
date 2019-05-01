@@ -22,228 +22,208 @@ use Deployer\Storage\ThemeNotFound;
 use Deployer\Storage\ThemeRepository;
 use WP_Error;
 
-class Dashboard
-{
-    public $messages = array();
+class Dashboard {
 
-    /**
-     * @var Database
-     */
-    private $db;
+	public $messages = [];
 
-    /**
-     * @var LicenseManager
-     */
-    private $license;
+	/**
+	 * @var Database
+	 */
+	private $db;
 
-    /**
-     * @var Logger
-     */
-    private $log;
+	/**
+	 * @var LicenseManager
+	 */
+	private $license;
 
-    /**
-     * @var PluginRepository
-     */
-    private $plugins;
+	/**
+	 * @var Logger
+	 */
+	private $log;
 
-    /**
-     * @var ThemeRepository
-     */
-    private $themes;
+	/**
+	 * @var PluginRepository
+	 */
+	private $plugins;
 
-    /**
-     * @param Database $db
-     * @param LicenseManager $license
-     * @param Logger $log
-     * @param PluginRepository $plugins
-     * @param Deployer $deployer
-     * @param ThemeRepository $themes
-     */
-    public function __construct(Database $db, LicenseManager $license, Logger $log, PluginRepository $plugins, Deployer $deployer, ThemeRepository $themes)
-    {
-        $this->db = $db;
-        $this->license = $license;
-        $this->log = $log;
-        $this->plugins = $plugins;
-        $this->deployer = $deployer;
-        $this->themes = $themes;
-    }
+	/**
+	 * @var ThemeRepository
+	 */
+	private $themes;
 
-    public function getIndex()
-    {
-        $data['log'] = $this->log;
-        $data['license_key'] = $this->license->licenseKey();
+	/**
+	 * @param Database         $db
+	 * @param LicenseManager   $license
+	 * @param Logger           $log
+	 * @param PluginRepository $plugins
+	 * @param Deployer         $deployer
+	 * @param ThemeRepository  $themes
+	 */
+	public function __construct( Database $db, LicenseManager $license, Logger $log, PluginRepository $plugins, Deployer $deployer, ThemeRepository $themes ) {
+		$this->db       = $db;
+		$this->license  = $license;
+		$this->log      = $log;
+		$this->plugins  = $plugins;
+		$this->deployer = $deployer;
+		$this->themes   = $themes;
+	}
 
-        $data['tab'] = isset($_GET['tab']) ? $_GET['tab'] : null;
+	public function getIndex() {
+		$data['log']         = $this->log;
+		$data['license_key'] = $this->license->licenseKey();
 
-        switch ($data['tab']) {
-            case 'github':
-                $data['tabView'] = 'github.php';
-                break;
-            case 'bitbucket':
-                $data['tabView'] = 'bitbucket.php';
-                break;
-            case 'gitlab':
-                $data['tabView'] = 'gitlab.php';
-                break;
-            case 'log':
-                $data['tabView'] = 'log.php';
-                break;
-            default:
-                $data['tabView'] = 'general.php';
-        }
+		$data['tab'] = isset( $_GET['tab'] ) ? $_GET['tab'] : null;
 
-        return $this->render('index', $data);
-    }
+		switch ( $data['tab'] ) {
+			case 'github':
+				$data['tabView'] = 'github.php';
+				break;
+			case 'bitbucket':
+				$data['tabView'] = 'bitbucket.php';
+				break;
+			case 'gitlab':
+				$data['tabView'] = 'gitlab.php';
+				break;
+			case 'log':
+				$data['tabView'] = 'log.php';
+				break;
+			default:
+				$data['tabView'] = 'general.php';
+		}
 
-    public function postClearLog($request)
-    {
-        $this->log->clear();
-        $this->addMessage('Log was cleared!');
-    }
+		return $this->render( 'index', $data );
+	}
 
-    public function getPlugins()
-    {
-        if (isset($_GET['repo'])) {
-            try {
-                $plugin = $this->plugins->deployerPluginFromRepository($_GET['repo']);
-                return $this->render('plugins/edit', compact('plugin'));
-            } catch (PluginNotFound $e) {
-                // Plugin doesn't exist, show index instead
-            }
-        }
+	public function postClearLog( $request ) {
+		$this->log->clear();
+		$this->addMessage( 'Log was cleared!' );
+	}
 
-        $data['plugins'] = $this->plugins->allDeployerPlugins();
+	public function getPlugins() {
+		if ( isset( $_GET['repo'] ) ) {
+			try {
+				$plugin = $this->plugins->deployerPluginFromRepository( $_GET['repo'] );
+				return $this->render( 'plugins/edit', compact( 'plugin' ) );
+			} catch ( PluginNotFound $e ) {
+				// Plugin doesn't exist, show index instead
+			}
+		}
 
-        return $this->render('plugins/index', $data);
-    }
+		$data['plugins'] = $this->plugins->allDeployerPlugins();
 
-    public function postEditPlugin($request)
-    {
-        $command = new EditPlugin($request);
-        $this->execute($command);
-    }
+		return $this->render( 'plugins/index', $data );
+	}
 
-    public function postUpdatePlugin($request)
-    {
-        $command = new UpdatePlugin($request);
-        $this->execute($command);
-    }
+	public function postEditPlugin( $request ) {
+		$command = new EditPlugin( $request );
+		$this->execute( $command );
+	}
 
-    public function getPluginsCreate()
-    {
-        // Run cleanup of orphan packages
-        $this->db->cleanup();
+	public function postUpdatePlugin( $request ) {
+		$command = new UpdatePlugin( $request );
+		$this->execute( $command );
+	}
 
-        return $this->render('plugins/create');
-    }
+	public function getPluginsCreate() {
+		// Run cleanup of orphan packages
+		$this->db->cleanup();
 
-    public function postInstallPlugin($request)
-    {
-        $command = new InstallPlugin($request);
-        $this->execute($command);
-    }
+		return $this->render( 'plugins/create' );
+	}
 
-    public function getThemes()
-    {
-        if (isset($_GET['repo'])) {
-            try {
-                $theme = $this->themes->deployerThemeFromRepository($_GET['repo']);
-                return $this->render('themes/edit', compact('theme'));
-            } catch (ThemeNotFound $e)
-            {
-                // Theme not found, show index instead
-            }
-        }
+	public function postInstallPlugin( $request ) {
+		$command = new InstallPlugin( $request );
+		$this->execute( $command );
+	}
 
-        $data['themes'] = $this->themes->allDeployerThemes();
+	public function getThemes() {
+		if ( isset( $_GET['repo'] ) ) {
+			try {
+				$theme = $this->themes->deployerThemeFromRepository( $_GET['repo'] );
+				return $this->render( 'themes/edit', compact( 'theme' ) );
+			} catch ( ThemeNotFound $e ) {
+				// Theme not found, show index instead
+			}
+		}
 
-        return $this->render('themes/index', $data);
-    }
+		$data['themes'] = $this->themes->allDeployerThemes();
 
-    public function postEditTheme($request)
-    {
-        $command = new EditTheme($request);
-        $this->execute($command);
-    }
+		return $this->render( 'themes/index', $data );
+	}
 
-    public function postUpdateTheme($request)
-    {
-        $command = new UpdateTheme($request);
-        $this->execute($command);
-    }
+	public function postEditTheme( $request ) {
+		$command = new EditTheme( $request );
+		$this->execute( $command );
+	}
 
-    public function getThemesCreate()
-    {
-        // Run cleanup of orphan packages
-        $this->db->cleanup();
+	public function postUpdateTheme( $request ) {
+		$command = new UpdateTheme( $request );
+		$this->execute( $command );
+	}
 
-        return $this->render('themes/create');
-    }
+	public function getThemesCreate() {
+		// Run cleanup of orphan packages
+		$this->db->cleanup();
 
-    public function postInstallTheme($request)
-    {
-        $command = new InstallTheme($request);
-        $this->execute($command);
-    }
+		return $this->render( 'themes/create' );
+	}
 
-    public function postWebhook($repository)
-    {
-        $command = new UpdatePackageFromWebhook($repository);
-        $this->execute($command);
+	public function postInstallTheme( $request ) {
+		$command = new InstallTheme( $request );
+		$this->execute( $command );
+	}
 
-        die();
-    }
+	public function postWebhook( $repository ) {
+		$command = new UpdatePackageFromWebhook( $repository );
+		$this->execute( $command );
 
-    public function postUnlinkPlugin($request)
-    {
-        $command = new UnlinkPlugin($request);
-        $this->execute($command);
-    }
+		die();
+	}
 
-    public function postUnlinkTheme($request)
-    {
-        $command = new UnlinkTheme($request);
-        $this->execute($command);
-    }
+	public function postUnlinkPlugin( $request ) {
+		$command = new UnlinkPlugin( $request );
+		$this->execute( $command );
+	}
 
-    public function addMessage($message)
-    {
-        $this->messages[] = $message;
-    }
+	public function postUnlinkTheme( $request ) {
+		$command = new UnlinkTheme( $request );
+		$this->execute( $command );
+	}
 
-    public function execute($command)
-    {
-        $handlerClass = str_replace('Commands', 'Handlers', get_class($command));
+	public function addMessage( $message ) {
+		$this->messages[] = $message;
+	}
 
-        if ( ! class_exists($handlerClass)) {
-            throw new InvalidArgumentException("Handler {$handlerClass} doesn't exist.");
-        }
+	public function execute( $command ) {
+		$handlerClass = str_replace( 'Commands', 'Handlers', get_class( $command ) );
 
-        $handler = $this->deployer->make($handlerClass);
+		if ( ! class_exists( $handlerClass ) ) {
+			throw new InvalidArgumentException( "Handler {$handlerClass} doesn't exist." );
+		}
 
-        try {
-            $handler->handle($command);
-        } catch (Exception $e) {
-            status_header(400);
-            $this->messages[] = new WP_Error('wpdeployer_error', $e->getMessage());
-            $this->log->error($e->getMessage());
-        }
-    }
+		$handler = $this->deployer->make( $handlerClass );
 
-    protected function render($view, $data = array())
-    {
-        if ( ! current_user_can('update_plugins') || ! current_user_can('update_themes') ) {
-            wp_die(__('You do not have sufficient permissions to access this page.'));
-        }
+		try {
+			$handler->handle( $command );
+		} catch ( Exception $e ) {
+			status_header( 400 );
+			$this->messages[] = new WP_Error( 'wpdeployer_error', $e->getMessage() );
+			$this->log->error( $e->getMessage() );
+		}
+	}
 
-        $data['messages'] = $this->messages;
-        $data['hasValidLicense'] = $this->deployer->hasValidLicenseKey();
-        $data['name'] = $this->deployer->getName();
+	protected function render( $view, $data = [] ) {
+		if ( ! current_user_can( 'update_plugins' ) || ! current_user_can( 'update_themes' ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		}
 
-        // Extract data
-        extract($data);
+		$data['messages']        = $this->messages;
+		$data['hasValidLicense'] = $this->deployer->hasValidLicenseKey();
+		$data['name']            = $this->deployer->getName();
 
-        return include __DIR__.'/../views/base.php';
-    }
+		// Extract data
+		extract( $data );
+
+		return include __DIR__ . '/../views/base.php';
+	}
 }

@@ -12,7 +12,7 @@ if ( ! defined( 'WPINC' ) ) {
 <br>
 
 <div class="nav-tab-wrapper">
-	<a href="?page=wpdeployer" title="General" class="nav-tab<?php echo is_null($tab) ? ' nav-tab-active' : null; ?>">General</a>
+	<a href="?page=wpdeployer" title="General" class="nav-tab<?php echo is_null( $tab ) ? ' nav-tab-active' : null; ?>">General</a>
 	<a href="?page=wpdeployer&tab=github" title="GitHub" class="nav-tab<?php echo $tab === 'github' ? ' nav-tab-active' : null; ?>">GitHub</a>
 	<a href="?page=wpdeployer&tab=bitbucket" title="Bitbucket" class="nav-tab<?php echo $tab === 'bitbucket' ? ' nav-tab-active' : null; ?>">Bitbucket</a>
 	<a href="?page=wpdeployer&tab=gitlab" title="GitLab" class="nav-tab<?php echo $tab === 'gitlab' ? ' nav-tab-active' : null; ?>">GitLab</a>

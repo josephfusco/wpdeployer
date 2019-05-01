@@ -6,205 +6,204 @@ use Deployer\Git\Repository;
 use Deployer\Git\RepositoryFactory;
 use Deployer\Plugin;
 
-class PluginRepository
-{
-    /**
-     * @var RepositoryFactory
-     */
-    private $repositoryFactory;
+class PluginRepository {
 
-    /**
-     * @param RepositoryFactory $repositoryFactory
-     */
-    public function __construct(RepositoryFactory $repositoryFactory)
-    {
-        $this->repositoryFactory = $repositoryFactory;
-    }
+	/**
+	 * @var RepositoryFactory
+	 */
+	private $repositoryFactory;
 
-    public function allDeployerPlugins()
-    {
-        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+	/**
+	 * @param RepositoryFactory $repositoryFactory
+	 */
+	public function __construct( RepositoryFactory $repositoryFactory ) {
+		$this->repositoryFactory = $repositoryFactory;
+	}
 
-        global $wpdb;
+	public function allDeployerPlugins() {
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-        $table_name = deployerTableName();
+		global $wpdb;
 
-        $rows = $wpdb->get_results("SELECT * FROM $table_name WHERE type = 1");
+		$table_name = deployerTableName();
 
-        $plugins = array();
+		$rows = $wpdb->get_results( "SELECT * FROM $table_name WHERE type = 1" );
 
-        foreach ($rows as $row) {
+		$plugins = [];
 
-            // This is our change to do some cleaning up
-            if ( ! file_exists(WP_PLUGIN_DIR . "/" . $row->package)) {
-                $this->delete($row->id);
-                continue;
-            }
+		foreach ( $rows as $row ) {
 
-            $array = get_plugin_data(WP_PLUGIN_DIR . "/" . $row->package);
-            $plugins[$row->package] = Plugin::fromWpArray($row->package, $array);
-            $repository = new Repository($row->repository);
-            $repository->setBranch($row->branch);
-            $plugins[$row->package]->setRepository($repository);
-            $plugins[$row->package]->setPushToDeploy($row->ptd);
-            $plugins[$row->package]->setHost($row->host);
-            $plugins[$row->package]->setSubdirectory($row->subdirectory);
-        }
+			// This is our change to do some cleaning up
+			if ( ! file_exists( WP_PLUGIN_DIR . '/' . $row->package ) ) {
+				$this->delete( $row->id );
+				continue;
+			}
 
-        return $plugins;
-    }
+			$array                    = get_plugin_data( WP_PLUGIN_DIR . '/' . $row->package );
+			$plugins[ $row->package ] = Plugin::fromWpArray( $row->package, $array );
+			$repository               = new Repository( $row->repository );
+			$repository->setBranch( $row->branch );
+			$plugins[ $row->package ]->setRepository( $repository );
+			$plugins[ $row->package ]->setPushToDeploy( $row->ptd );
+			$plugins[ $row->package ]->setHost( $row->host );
+			$plugins[ $row->package ]->setSubdirectory( $row->subdirectory );
+		}
 
-    public function delete($id)
-    {
-        global $wpdb;
+		return $plugins;
+	}
 
-        $table_name = deployerTableName();
+	public function delete( $id ) {
+		global $wpdb;
 
-        $wpdb->delete($table_name, array('id' => sanitize_text_field($id)));
-    }
+		$table_name = deployerTableName();
 
-    public function unlink($file)
-    {
-        global $wpdb;
+		$wpdb->delete( $table_name, [ 'id' => sanitize_text_field( $id ) ] );
+	}
 
-        $table_name = deployerTableName();
+	public function unlink( $file ) {
+		global $wpdb;
 
-        $wpdb->delete($table_name, array('package' => sanitize_text_field($file)));
-    }
+		$table_name = deployerTableName();
 
-    public function editPlugin($file, $input)
-    {
-        global $wpdb;
+		$wpdb->delete( $table_name, [ 'package' => sanitize_text_field( $file ) ] );
+	}
 
-        $model = new PackageModel(array(
-            'package' => $file,
-            'repository' => $input['repository'],
-            'branch' => $input['branch'],
-            'ptd' => $input['ptd'],
-            'subdirectory' => $input['subdirectory'],
-        ));
+	public function editPlugin( $file, $input ) {
+		global $wpdb;
 
-        $table_name = deployerTableName();
+		$model = new PackageModel(
+			[
+				'package'      => $file,
+				'repository'   => $input['repository'],
+				'branch'       => $input['branch'],
+				'ptd'          => $input['ptd'],
+				'subdirectory' => $input['subdirectory'],
+			]
+		);
 
-        return $wpdb->update(
-            $table_name,
-            array(
-                'repository' => $model->repository,
-                'branch' => $model->branch,
-                'ptd' => $model->ptd,
-                'subdirectory' => $model->subdirectory,
-            ),
-            array('package' => $model->package)
-        );
-    }
+		$table_name = deployerTableName();
 
-    /**
-     * @param $slug
-     * @return Plugin
-     */
-    public function fromSlug($slug)
-    {
-        $plugins = get_plugins();
+		return $wpdb->update(
+			$table_name,
+			[
+				'repository'   => $model->repository,
+				'branch'       => $model->branch,
+				'ptd'          => $model->ptd,
+				'subdirectory' => $model->subdirectory,
+			],
+			[ 'package' => $model->package ]
+		);
+	}
 
-        foreach ($plugins as $file => $pluginInfo) {
-            $tmp = explode('/', $file);
-            $currentSlug = $tmp[0];
+	/**
+	 * @param $slug
+	 * @return Plugin
+	 */
+	public function fromSlug( $slug ) {
+		$plugins = get_plugins();
 
-            if ($currentSlug === $slug) break;
+		foreach ( $plugins as $file => $pluginInfo ) {
+			$tmp         = explode( '/', $file );
+			$currentSlug = $tmp[0];
 
-            $file = null;
-        }
+			if ( $currentSlug === $slug ) {
+				break;
+			}
 
-        return Plugin::fromWpArray($file, $pluginInfo);
-    }
+			$file = null;
+		}
 
-    /**
-     * @param $repository
-     * @return Plugin $plugin
-     * @throws PluginNotFound
-     */
-    public function deployerPluginFromRepository($repository)
-    {
-        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+		return Plugin::fromWpArray( $file, $pluginInfo );
+	}
 
-        global $wpdb;
+	/**
+	 * @param $repository
+	 * @return Plugin $plugin
+	 * @throws PluginNotFound
+	 */
+	public function deployerPluginFromRepository( $repository ) {
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-        $table_name = deployerTableName();
+		global $wpdb;
 
-        $model = new PackageModel(array('repository' => $repository));
+		$table_name = deployerTableName();
 
-        $row = $wpdb->get_row("SELECT * FROM $table_name WHERE type = 1 AND repository = '{$model->repository}'");
+		$model = new PackageModel( [ 'repository' => $repository ] );
 
-        if ( ! $row or ! file_exists(WP_PLUGIN_DIR . "/" . $row->package)) {
-            throw new PluginNotFound('Could not find plugin.');
-        }
+		$row = $wpdb->get_row( "SELECT * FROM $table_name WHERE type = 1 AND repository = '{$model->repository}'" );
 
-        $array = get_plugin_data(WP_PLUGIN_DIR . "/" . $row->package);
-        $plugin = Plugin::fromWpArray($row->package, $array);
+		if ( ! $row or ! file_exists( WP_PLUGIN_DIR . '/' . $row->package ) ) {
+			throw new PluginNotFound( 'Could not find plugin.' );
+		}
 
-        $repository = $this->repositoryFactory->build(
-            $row->host,
-            $row->repository
-        );
+		$array  = get_plugin_data( WP_PLUGIN_DIR . '/' . $row->package );
+		$plugin = Plugin::fromWpArray( $row->package, $array );
 
-        $repository->setBranch($row->branch);
-        $plugin->setRepository($repository);
-        $plugin->setPushToDeploy($row->ptd);
-        $plugin->setHost($row->host);
-        $plugin->setSubdirectory($row->subdirectory);
+		$repository = $this->repositoryFactory->build(
+			$row->host,
+			$row->repository
+		);
 
-        if ($row->private)
-            $plugin->repository->makePrivate();
+		$repository->setBranch( $row->branch );
+		$plugin->setRepository( $repository );
+		$plugin->setPushToDeploy( $row->ptd );
+		$plugin->setHost( $row->host );
+		$plugin->setSubdirectory( $row->subdirectory );
 
-        return $plugin;
-    }
+		if ( $row->private ) {
+			$plugin->repository->makePrivate();
+		}
 
-    public function store(Plugin $plugin)
-    {
-        global $wpdb;
+		return $plugin;
+	}
 
-        $model = new PackageModel(array(
-            'package' => $plugin->file,
-            'repository' => $plugin->repository,
-            'branch' => $plugin->repository->getBranch(),
-            'status' => 1,
-            'host' => $plugin->repository->code,
-            'private' => $plugin->repository->isPrivate(),
-            'ptd' => $plugin->pushToDeploy,
-            'subdirectory' => $plugin->getSubdirectory(),
-        ));
+	public function store( Plugin $plugin ) {
+		global $wpdb;
 
-        $table_name = deployerTableName();
+		$model = new PackageModel(
+			[
+				'package'      => $plugin->file,
+				'repository'   => $plugin->repository,
+				'branch'       => $plugin->repository->getBranch(),
+				'status'       => 1,
+				'host'         => $plugin->repository->code,
+				'private'      => $plugin->repository->isPrivate(),
+				'ptd'          => $plugin->pushToDeploy,
+				'subdirectory' => $plugin->getSubdirectory(),
+			]
+		);
 
-        $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE package = '$model->package'");
+		$table_name = deployerTableName();
 
-        if ($count !== '0') {
+		$count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name WHERE package = '$model->package'" );
 
-            return $wpdb->update(
-                $table_name,
-                array(
-                    'branch' => $model->branch,
-                    'status' => $model->status,
-                    'subdirectory' => $model->subdirectory,
-                ),
-                array('package' => $model->package)
-            );
+		if ( $count !== '0' ) {
 
-        }
+			return $wpdb->update(
+				$table_name,
+				[
+					'branch'       => $model->branch,
+					'status'       => $model->status,
+					'subdirectory' => $model->subdirectory,
+				],
+				[ 'package' => $model->package ]
+			);
 
-        return $wpdb->insert(
-            $table_name,
-            array(
-                'package' => $model->package,
-                'repository' => $model->repository,
-                'branch' => $model->branch,
-                'type' => 1,
-                'status' => $model->status,
-                'host' => $model->host,
-                'private' => $model->private,
-                'ptd' => $model->ptd,
-                'subdirectory' => $model->subdirectory,
-            )
-        );
-    }
+		}
+
+		return $wpdb->insert(
+			$table_name,
+			[
+				'package'      => $model->package,
+				'repository'   => $model->repository,
+				'branch'       => $model->branch,
+				'type'         => 1,
+				'status'       => $model->status,
+				'host'         => $model->host,
+				'private'      => $model->private,
+				'ptd'          => $model->ptd,
+				'subdirectory' => $model->subdirectory,
+			]
+		);
+	}
 }
