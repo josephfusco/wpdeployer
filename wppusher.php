@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Deployer
  * Description: Pain-free deployment of WordPress themes and plugins directly from GitHub, Bitbucket, and GitLab.
- * Version: 1.2
+ * Version: 1.1
  * Author: WP Deployer
  * License: GNU GENERAL PUBLIC LICENSE
  * GitHub Plugin URI: josephfusco/wpdeployer
